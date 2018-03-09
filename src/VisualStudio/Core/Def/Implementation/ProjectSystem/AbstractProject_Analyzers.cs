@@ -16,12 +16,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
 {
     internal partial class AbstractProject
     {
-        private AnalyzerFileWatcherService _analyzerFileWatcherService = null;
-        private AnalyzerDependencyCheckingService _dependencyCheckingService = null;
-
         public void AddAnalyzerReference(string analyzerAssemblyFullPath)
         {
             AssertIsForeground();
+
+            // TODO: implement
+            /*
 
             if (CurrentProjectAnalyzersContains(analyzerAssemblyFullPath))
             {
@@ -67,11 +67,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
             {
                 analyzer.UpdatedOnDisk += OnAnalyzerChanged;
             }
+            */
         }
 
         public void RemoveAnalyzerReference(string analyzerAssemblyFullPath)
         {
             AssertIsForeground();
+
+
+            // TODO: reimplement
+            /*
 
             if (!TryGetAnalyzer(analyzerAssemblyFullPath, out var analyzer))
             {
@@ -99,122 +104,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
             }
 
             analyzer.Dispose();
-        }
-
-        public void SetRuleSetFile(string ruleSetFileFullPath)
-        {
-            AssertIsForeground();
-
-            if (ruleSetFileFullPath == null)
-            {
-                ruleSetFileFullPath = string.Empty;
-            }
-
-            if (ruleSetFileFullPath.Length > 0)
-            {
-                // This is already a full path, but run it through GetFullPath to clean it (e.g., remove
-                // extra backslashes).
-                ruleSetFileFullPath = Path.GetFullPath(ruleSetFileFullPath);
-            }
-
-            if (this.RuleSetFile != null &&
-                this.RuleSetFile.Target.FilePath.Equals(ruleSetFileFullPath, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            ResetAnalyzerRuleSet(ruleSetFileFullPath);
-        }
-
-        public void AddAdditionalFile(string additionalFilePath, Func<IVisualStudioHostDocument, bool> getIsInCurrentContext)
-        {
-            AssertIsForeground();
-
-            var document = this.DocumentProvider.TryGetDocumentForFile(
-                this,
-                filePath: additionalFilePath,
-                sourceCodeKind: SourceCodeKind.Regular,
-                folderNames: ImmutableArray<string>.Empty,
-                canUseTextBuffer: _ => true,
-                updatedOnDiskHandler: s_additionalDocumentUpdatedOnDiskEventHandler,
-                openedHandler: s_additionalDocumentOpenedEventHandler,
-                closingHandler: s_additionalDocumentClosingEventHandler);
-
-            if (document == null)
-            {
-                return;
-            }
-
-            AddAdditionalDocument(document, isCurrentContext: getIsInCurrentContext(document));
-        }
-
-        public void RemoveAdditionalFile(string additionalFilePath)
-        {
-            IVisualStudioHostDocument document = this.GetCurrentDocumentFromPath(additionalFilePath);
-            if (document == null)
-            {
-                throw new InvalidOperationException("The document is not a part of the finalProject.");
-            }
-
-            RemoveAdditionalDocument(document);
-        }
-
-        private void ResetAnalyzerRuleSet(string ruleSetFileFullPath)
-        {
-            ClearAnalyzerRuleSet();
-            SetAnalyzerRuleSet(ruleSetFileFullPath);
-            ResetArgumentsAndUpdateOptions();
-        }
-
-        private void SetAnalyzerRuleSet(string ruleSetFileFullPath)
-        {
-            if (ruleSetFileFullPath.Length != 0)
-            {
-                this.RuleSetFile = this.ProjectTracker.RuleSetFileManager.GetOrCreateRuleSet(ruleSetFileFullPath);
-                this.RuleSetFile.Target.UpdatedOnDisk += OnRuleSetFileUpdateOnDisk;
-            }
-        }
-
-        private void ClearAnalyzerRuleSet()
-        {
-            if (this.RuleSetFile != null)
-            {
-                this.RuleSetFile.Target.UpdatedOnDisk -= OnRuleSetFileUpdateOnDisk;
-                this.RuleSetFile.Dispose();
-                this.RuleSetFile = null;
-            }
-        }
-
-        // internal for testing purpose.
-        internal void OnRuleSetFileUpdateOnDisk(object sender, EventArgs e)
-        {
-            AssertIsForeground();
-
-            var filePath = this.RuleSetFile.Target.FilePath;
-
-            ResetAnalyzerRuleSet(filePath);
-        }
-
-        private AnalyzerFileWatcherService GetAnalyzerFileWatcherService()
-        {
-            if (_analyzerFileWatcherService == null)
-            {
-                var componentModel = (IComponentModel)this.ServiceProvider.GetService(typeof(SComponentModel));
-                Interlocked.CompareExchange(ref _analyzerFileWatcherService, componentModel.GetService<AnalyzerFileWatcherService>(), null);
-            }
-
-            return _analyzerFileWatcherService;
-        }
-
-        private AnalyzerDependencyCheckingService GetAnalyzerDependencyCheckingService()
-        {
-            if (_dependencyCheckingService == null)
-            {
-                var componentModel = (IComponentModel)this.ServiceProvider.GetService(typeof(SComponentModel));
-                Interlocked.CompareExchange(ref _dependencyCheckingService, componentModel.GetService<AnalyzerDependencyCheckingService>(), null);
-            }
-
-            return _dependencyCheckingService;
+            */
         }
     }
 }

@@ -35,5 +35,8 @@ namespace Microsoft.VisualStudio.LanguageServices.ProjectSystem
         void AddAdditionalFile(string filePath, bool isInCurrentContext = true);
         void RemoveAdditionalFile(string filePath);
         void SetRuleSetFile(string filePath);
+
+        void StartBatch();
+        void EndBatch();
     }
 }

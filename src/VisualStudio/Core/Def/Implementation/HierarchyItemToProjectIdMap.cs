@@ -99,11 +99,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation
             // without a ContainedDocument.
             foreach (var candidateProject in candidateProjects)
             {
+                // TODO: fix up
+                /*
                 if (!candidateProject.GetCurrentDocuments().Any(doc => doc is ContainedDocument))
                 {
                     projectId = candidateProject.Id;
                     return true;
                 }
+                */
             }
 
             projectId = default(ProjectId);
