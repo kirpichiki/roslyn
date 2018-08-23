@@ -20,6 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.CodeModel
         public ISyntaxFactsService SyntaxFactsService { get; }
         public ICodeGenerationService CodeGenerator { get; }
         public VisualStudioWorkspace Workspace { get; }
+        public ProjectCodeModelFactory ProjectCodeModelFactory { get; }
 
         public CodeModelState(
             IThreadingContext threadingContext,

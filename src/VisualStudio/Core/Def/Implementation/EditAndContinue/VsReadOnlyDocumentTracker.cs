@@ -79,12 +79,15 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.EditAndContinue
         {
             // Only set documents read-only if they're part of a project that supports Enc.
             var workspace = document.Project.Solution.Workspace as VisualStudioWorkspaceImpl;
+            // TODO: fix
+            /*
             var project = workspace?.DeferredState?.ProjectTracker?.GetProject(document.Project.Id);
 
             if (project?.EditAndContinueImplOpt != null)
             {
                 SetReadOnly(document.Id, _encService.IsProjectReadOnly(document.Project.Id, out var sessionReason, out var projectReason) && AllowsReadOnly(document.Id));
             }
+            */
         }
 
         private bool AllowsReadOnly(DocumentId documentId)
@@ -95,7 +98,7 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.EditAndContinue
 
             // Note that Razor-like views are modelled as a ContainedDocument but normal code including code-behind are modelled as a StandardTextDocument.
             var visualStudioWorkspace = _workspace as VisualStudioWorkspaceImpl;
-            var containedDocument = visualStudioWorkspace?.GetHostDocument(documentId) as ContainedDocument;
+            var containedDocument = visualStudioWorkspace?.TryGetContainedDocument(documentId);
             return containedDocument == null;
         }
 

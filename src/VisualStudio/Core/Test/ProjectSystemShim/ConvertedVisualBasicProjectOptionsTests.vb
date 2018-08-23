@@ -161,15 +161,7 @@ Namespace Microsoft.VisualStudio.LanguageServices.UnitTests.ProjectSystemShim
                                 .wszDisabledWarnings = commandLineNoWarns
                             }
             Dim compilerHost = New MockCompilerHost("C:\SDK")
-            Dim convertedOptions = VisualBasicProjectOptionsHelper.CreateCompilationOptions(
-                                    Nothing,
-                                    VisualBasicParseOptions.Default,
-                                    compilerOptions,
-                                    compilerHost,
-                                    SpecializedCollections.EmptyEnumerable(Of GlobalImport),
-                                    Nothing,
-                                    New MockRuleSetFile(ruleSetGeneralOption, ruleSetSpecificOptions))
-            Return convertedOptions
+            Return VisualBasicProject.OptionsProcessor.ApplyCompilationOptionsFromVBCompilerOptions(New VisualBasicCompilationOptions(OutputKind.DynamicallyLinkedLibrary), compilerOptions)
         End Function
     End Class
 End Namespace

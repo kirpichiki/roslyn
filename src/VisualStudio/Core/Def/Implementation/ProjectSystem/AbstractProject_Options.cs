@@ -21,30 +21,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
         internal CompilationOptions CurrentCompilationOptions => _currentCompilationOptions;
         internal ParseOptions CurrentParseOptions => _currentParseOptions;
 
-        private void SetOptionsCore(CompilationOptions newCompilationOptions)
-        {
-            lock (_gate)
-            {
-                _currentCompilationOptions = newCompilationOptions;
-            }
-        }
-
         private void SetOptionsCore(CompilationOptions newCompilationOptions, ParseOptions newParseOptions)
         {
-            lock (_gate)
-            {
-                _currentCompilationOptions = newCompilationOptions;
-                _currentParseOptions = newParseOptions;
-            }
+            _currentCompilationOptions = newCompilationOptions;
+            _currentParseOptions = newParseOptions;
         }
 
         private void SetArgumentsCore(string commandLine, CommandLineArguments commandLineArguments)
         {
-            lock (_gate)
-            {
-                _lastParsedCompilerOptions = commandLine;
-                _lastParsedCommandLineArguments = commandLineArguments;
-            }
+            _lastParsedCompilerOptions = commandLine;
+            _lastParsedCommandLineArguments = commandLineArguments;
         }
         #endregion
 
@@ -126,11 +112,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
             // Set options.
             this.SetOptionsCore(newCompilationOptions, newParseOptions);
 
-            if (PushingChangesToWorkspace)
-            {
-                this.ProjectTracker.NotifyWorkspace(workspace => workspace.OnCompilationOptionsChanged(Id, newCompilationOptions));
-                this.ProjectTracker.NotifyWorkspace(workspace => workspace.OnParseOptionsChanged(Id, newParseOptions));
-            }
         }
 
         /// <summary>

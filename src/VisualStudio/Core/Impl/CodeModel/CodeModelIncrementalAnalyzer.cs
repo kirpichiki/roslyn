@@ -71,6 +71,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.CodeModel
             {
                 _notificationService.RegisterNotification(() =>
                 {
+                    return false;
+
+                    // TODO: fix up
+                    /*
+
                     var project = _workspace.DeferredState.ProjectTracker.GetProject(documentId.ProjectId);
                     if (project == null)
                     {
@@ -96,6 +101,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.CodeModel
 
                     var codeModel = fileCodeModelHandle.Object;
                     return codeModel.FireEvents();
+                    */
                 },
                 _listener.BeginAsyncOperation("CodeModelEvent"),
                 cancellationToken);

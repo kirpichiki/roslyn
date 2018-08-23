@@ -27,14 +27,12 @@ Namespace Microsoft.VisualStudio.LanguageServices.UnitTests.ProjectSystemShim.Fr
 
         Private Shared ReadOnly s_exportProviderFactory As Lazy(Of IExportProviderFactory) = New Lazy(Of IExportProviderFactory)(
             Function()
-                Dim catalog = TestExportProvider.EntireAssemblyCatalogWithCSharpAndVisualBasic.WithPart(GetType(LinkedFileUtilities))
+                Dim catalog = TestExportProvider.EntireAssemblyCatalogWithCSharpAndVisualBasic
                 Return ExportProviderCache.GetOrCreateExportProviderFactory(catalog)
             End Function)
 
         Private ReadOnly _monitorSelectionMock As MockShellMonitorSelection
         Private ReadOnly _workspace As TestWorkspace
-        Private ReadOnly _serviceProvider As MockServiceProvider
-        Private ReadOnly _projectTracker As VisualStudioProjectTracker
         Private ReadOnly _projectFilePaths As New List(Of String)
 
         Public Sub New(Optional solutionIsFullyLoaded As Boolean = True)
@@ -45,58 +43,37 @@ Namespace Microsoft.VisualStudio.LanguageServices.UnitTests.ProjectSystemShim.Fr
 
             _monitorSelectionMock = New MockShellMonitorSelection(solutionIsFullyLoaded)
             _workspace = New TestWorkspace(s_exportProviderFactory.Value.CreateExportProvider())
-            _serviceProvider = New MockServiceProvider(_monitorSelectionMock, _workspace)
-            _projectTracker = New VisualStudioProjectTracker(
-                _workspace.ExportProvider.GetExportedValue(Of IThreadingContext),
-                _serviceProvider,
-                _workspace,
-                _workspace.ExportProvider.GetExportedValue(Of LinkedFileUtilities))
+            ThreadingContext = _workspace.GetService(Of IThreadingContext)()
+            ServiceProvider = New MockServiceProvider(_monitorSelectionMock, _workspace)
+            ProjectTracker = New VisualStudioProjectTracker(
+                ServiceProvider,
+                _workspace)
 
-            Dim metadataReferenceProvider = New VisualStudioMetadataReferenceManager(_serviceProvider, _workspace.Services.GetService(Of ITemporaryStorageService)())
+            Dim metadataReferenceProvider = New VisualStudioMetadataReferenceManager(ServiceProvider, _workspace.Services.GetService(Of ITemporaryStorageService)())
             Dim ruleSetFileProvider = New VisualStudioRuleSetManager(
-                DirectCast(_serviceProvider.GetService(GetType(SVsFileChangeEx)), IVsFileChangeEx),
+                New FileChangeWatcher(Task.FromResult(DirectCast(ServiceProvider.GetService(GetType(SVsFileChangeEx)), IVsFileChangeEx))),
                 New TestForegroundNotificationService(),
                 AsynchronousOperationListenerProvider.NullListener)
 
-            Dim documentTrackingService = New VisualStudioDocumentTrackingService(_serviceProvider)
-            Dim documentProvider = New DocumentProvider(
-                _projectTracker,
-                _serviceProvider,
-                documentTrackingService,
-                _workspace.ExportProvider.GetExportedValue(Of LinkedFileUtilities))
-
-            _projectTracker.InitializeProviders(documentProvider, metadataReferenceProvider, ruleSetFileProvider)
+            Dim documentTrackingService = New VisualStudioDocumentTrackingService(ServiceProvider)
         End Sub
 
         Public Sub NotifySolutionAsFullyLoaded()
             _monitorSelectionMock.SolutionIsFullyLoaded = True
-            _projectTracker.OnAfterBackgroundSolutionLoadComplete()
+            ProjectTracker.OnAfterBackgroundSolutionLoadComplete()
         End Sub
 
+        Public ReadOnly Property ThreadingContext As IThreadingContext
         Public ReadOnly Property ProjectTracker As VisualStudioProjectTracker
-            Get
-                Return _projectTracker
-            End Get
-        End Property
-
         Public ReadOnly Property ServiceProvider As MockServiceProvider
-            Get
-                Return _serviceProvider
-            End Get
-        End Property
 
-        Public ReadOnly Property Workspace As Microsoft.CodeAnalysis.Workspace
+        Public ReadOnly Property Workspace As Workspace
             Get
                 Return _workspace
             End Get
         End Property
 
         Public Sub Dispose() Implements IDisposable.Dispose
-            For Each project In _projectTracker.ImmutableProjects.ToArray()
-                project.Disconnect()
-            Next
-
-            _projectTracker.OnAfterCloseSolution()
             _workspace.Dispose()
 
             For Each filePath In _projectFilePaths

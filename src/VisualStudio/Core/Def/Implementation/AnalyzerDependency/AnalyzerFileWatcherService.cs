@@ -152,11 +152,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation
 
             // Traverse the chain of requesting assemblies to get back to the original analyzer
             // assembly.
+
+            // TODO: fix up
+            /*
             var projectsWithAnalyzer = _workspace.DeferredState.ProjectTracker.ImmutableProjects.Where(p => p.CurrentProjectAnalyzersContains(filePath)).ToArray();
             foreach (var project in projectsWithAnalyzer)
             {
                 RaiseAnalyzerChangedWarning(project.Id, filePath);
-            }
+            }*/
         }
     }
 }
